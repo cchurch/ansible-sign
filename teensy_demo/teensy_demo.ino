@@ -1,5 +1,6 @@
 /*
  * Teensy 2.0 NeoPixel Demo (based on AdaFruit simple example)
+ * Also runs unmodified on the Arduino Yún.
  * Copyright 2014 Chris Church <chris@ninemoreminutes.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,10 +22,15 @@
 #define NP_COUNT 60
 #define NP_PIN 12
 
+// Run in bright mode (disable when working up close).
+#define NP_BRIGHT 1
+
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NP_COUNT, NP_PIN, NEO_GRB + NEO_KHZ800);
 
-// 
+// Pixel counter to loop over all pixels.
 static int i;
+
+// Sequence counter for colors, patterns, etc.
 static int j;
 
 void setup()
@@ -34,8 +40,14 @@ void setup()
 
 void loop()
 {
+    int y;
     int z = j % 8;
-    int y = (2 * (j % 64)) + 64;
+    if (NP_BRIGHT) {
+        y = (2 * (j % 64)) + 64;
+    }
+    else {
+        y = (j % 64) / 4 + 1;
+    }
     int r = (z == 0 || z == 3 || z == 4 || z == 6) ? y : 0;
     int g = (z == 1 || z == 4 || z == 5 || z == 6) ? y : 0;
     int b = (z == 2 || z == 5 || z == 3 || z == 6) ? y : 0;
