@@ -1,7 +1,8 @@
 The Ansible Sign
 ================
 
-Side project to add some light behind the silver A.
+Side project to add some light behind the silver A.  The `sign_v2` directory
+contains the latest running code.
 
 Now using an
 [Arduino Yún](http://arduino.cc/en/Main/ArduinoBoardYun?from=Products.ArduinoYUN)
