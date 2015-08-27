@@ -19,11 +19,17 @@
 
 #include "Adafruit_NeoPixel.h"
 
-#define NP_COUNT 55
+#define NP_COUNT 97
 #define NP_PIN 12
 
 // Run in bright mode (set to 0 when working up close to avoid blinding yourself).
 #define NP_BRIGHT 1
+
+// Outside ring, clockwise.
+#define NP_OUTER 52
+
+// Inside ring, counterclockwise.
+#define NP_INNER 45
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NP_COUNT, NP_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -32,6 +38,8 @@ void setup()
     pixels.begin();
     pixels.setBrightness(NP_BRIGHT ? 240 : 31);
 }
+
+int last_sound_level = 0;
 
 int get_sound_level(int ms)
 {
@@ -54,7 +62,8 @@ int get_sound_level(int ms)
     if (d_max > 511) {
         d_max = 511;
     }
-    return (d_max - d_min) / 2;
+    last_sound_level = (d_max - d_min) / 2;
+    return last_sound_level;
 }
     
 // Set brightness and color based on sequence counter.
@@ -76,7 +85,7 @@ int cw_loop(int n)
     set_color(p++, n);
     pixels.show();
     delay((n % 64) / 8 + 4);
-    if (p >= NP_COUNT) {
+    if (p >= NP_OUTER) {
         p = 0;
         n = (n < 64) ? n + 1 : -1;
     }
@@ -87,13 +96,13 @@ int cw_loop(int n)
 // Counter-clockwise loop.
 int ccw_loop(int n)
 {
-    static int p = NP_COUNT - 1;
+    static int p = NP_OUTER - 1;
 
     set_color(p--, n);
     pixels.show();
     delay((n % 64) / 8 + 4);
     if (p < 0) {
-        p = NP_COUNT - 1;
+        p = NP_OUTER - 1;
         n = (n < 64) ? n + 1 : -1;
     }
 
@@ -106,7 +115,7 @@ int solid_colors(int n)
     static int p = 0;
 
     set_color(p++, n);
-    if (p >= NP_COUNT) {
+    if (p >= NP_OUTER) {
         pixels.show();
         p = 0;
         delay((40 * (n % 64) / 8) + 200);
@@ -128,7 +137,7 @@ int pulsing_white(int n)
         y += (128 - (n % 16) * 8);
     }
     pixels.setPixelColor(p++, pixels.Color(y, y, y));
-    if (p >= NP_COUNT) {
+    if (p >= NP_OUTER) {
         pixels.show();
         p = 0;
         delay(100);
@@ -141,31 +150,29 @@ int pulsing_white(int n)
 // Ansible red/green colors.
 int split_ansible_colors(int n)
 {
-    static int p = 0;
-    static int y = 0;
+    int y = 0;
+    int p = 0;
 
-    if (p == 0) {
-        y = get_sound_level(40) / 2 + 64;
-    }
+    //y = 0xff;//get_sound_level(40) / 2 + 64;
+    y = last_sound_level / 4 + 128;
 
-    int r = y;
-    int g = y;
-    int b = y;
-    if (((p + n) % NP_COUNT) < (NP_COUNT / 2)) {
-        r = y * 0x24 / 256;
-        g = y * 0xc5 / 256;
-        b = y * 0x57 / 256;
-    }
-    else {
-        g = y * 0x58 / 256;
-        b = y * 0x50 / 256;
-    }
-    pixels.setPixelColor(p++, pixels.Color(r, g, b));
-    if (p >= NP_COUNT) {
-        pixels.show();
-        p = 0;
-        n = (n < NP_COUNT * 16) ? n + 1 : -1;
-    }
+    for (p = 0; p < NP_OUTER; p++) {
+        int r, g, b;
+        if (((p + n) % NP_OUTER) < (NP_OUTER / 2)) {
+            r = y * 0x24 / 256;
+            g = y * 0xc5 / 256;
+            b = y * 0x57 / 256;
+        }
+        else {
+            r = y;
+            g = y * 0x58 / 256;
+            b = y * 0x50 / 256;
+        }
+        pixels.setPixelColor(p, pixels.Color(r, g, b));
+    }    
+
+    pixels.show();
+    n = (n < NP_OUTER * 16) ? n + 1 : -1;
 
     return n;
 }
@@ -183,17 +190,17 @@ int durham_bulls_colors(int n)
     int r = y;
     int g = y;
     int b = y;
-    if (((p + n) % NP_COUNT) < (NP_COUNT / 3)) {
+    if (((p + n) % NP_OUTER) < (NP_OUTER / 3)) {
         r = 0; g = 0;
     }
-    else if (((p + n) % NP_COUNT) < (2 * NP_COUNT / 3)) {
+    else if (((p + n) % NP_OUTER) < (2 * NP_OUTER / 3)) {
         g = 3 * y / 4; b = 0;
     }
     pixels.setPixelColor(p++, pixels.Color(r, g, b));
-    if (p >= NP_COUNT) {
+    if (p >= NP_OUTER) {
         pixels.show();
         p = 0;
-        n = (n < NP_COUNT * 16) ? n + 1 : -1;
+        n = (n < NP_OUTER * 16) ? n + 1 : -1;
     }
 
     return n;    
@@ -202,65 +209,84 @@ int durham_bulls_colors(int n)
 // Pulsing white, brightness based on sound level.
 int sound_activated(int n)
 {
-    static int p = 0;
-    static int y = 0;
+    int p = 0;
+    int y = 0;
 
-    if (p == 0) {
-        y = get_sound_level(100) / 2 + (n / 4);
+    y = get_sound_level(100) / 2 + (n / 4);
+    for (p = 0; p < NP_OUTER; p++) {
+        pixels.setPixelColor(p, pixels.Color(y, y, y));
     }
+    pixels.show();
 
-    pixels.setPixelColor(p++, pixels.Color(y, y, y));
-    if (p >= NP_COUNT) {
-        pixels.show();
-        p = 0;
-        n = (n < 256) ? n + 1 : -1;
+    return (n < 256) ? n + 1 : -1;  
+}
+
+// Pulsing white, brightness based on sound level.
+int sound_activated_inner(int n)
+{
+    int p = 0;
+    int y = 0;
+
+    //y = get_sound_level(100) / 2 + (n / 4);
+    //y = last_sound_level / 2 + (n / 4);
+    y = 255 - (get_sound_level(100) / 4 + (n / 8));
+    for (p = NP_OUTER; p < NP_COUNT; p++) {
+        pixels.setPixelColor(p, pixels.Color(y, y, y));
     }
+    pixels.show();
 
-    return n;  
+    return (n < 256) ? n + 1 : -1;  
 }
 
 void loop()
 {
     // Current sequence.
-    static int s = 0; 
-
+    static int s_outer = 0; 
+    //static int s_inner = 0;
+    
     // Sequence counter.  Starts at 0 when first passed to a sequence; the sequence
     // returns the value to be passed in the next loop.  When a sequence returns -1,
     // it has completed and we move on to the next sequence.
-    static int n = 0;
+    static int n_outer = 0;
+    static int n_inner = 0;
 
-    switch (s) {
+    switch (s_outer) {
         /*case 0:
-            n = cw_loop(n);
+            n_outer = cw_loop(n_outer);
             break;
         case 1:
-            n = ccw_loop(n);
+            n_outer = ccw_loop(n_outer);
             break;
         case 2:
-            n = solid_colors(n);
+            n_outer = solid_colors(n_outer);
             break;
         case 3:
-            n = pulsing_white(n);
+            n_outer = pulsing_white(n_outer);
             break;*/
         case 4:
-            n = split_ansible_colors(n);
+            n_outer = split_ansible_colors(n_outer);
             break;
         /*case 5:
-            n = durham_bulls_colors(n);
+            n_outer = durham_bulls_colors(n_outer);
             break;*/
-        case 6:
-            n = sound_activated(n);
-            break;
+        /*case 6:
+            n_outer = sound_activated(n_outer);
+            break;*/
         case 99:
-            s = 0;
+            s_outer = 0;
             break;
         default:
-            n = -1;
+            n_outer = -1;
             break;
     }
-
-    if (n < 0) {
-        s++;
-        n = 0;
+    if (n_outer < 0) {
+        s_outer++;
+        n_outer = 0;
     }
+
+    n_inner = sound_activated_inner(n_inner);
+    if (n_inner < 0) {
+        n_inner = 0;
+    }
+
 }
