@@ -153,8 +153,8 @@ int split_ansible_colors(int n)
     int y = 0;
     int p = 0;
 
-    //y = 0xff;//get_sound_level(40) / 2 + 64;
-    y = last_sound_level / 4 + 128;
+    y = get_sound_level(50) / 4 + 128;
+    //y = last_sound_level / 4 + 128;
 
     for (p = 0; p < NP_OUTER; p++) {
         int r, g, b;
@@ -229,7 +229,8 @@ int sound_activated_inner(int n)
 
     //y = get_sound_level(100) / 2 + (n / 4);
     //y = last_sound_level / 2 + (n / 4);
-    y = 255 - (get_sound_level(100) / 4 + (n / 8));
+    //y = 255 - (get_sound_level(100) / 4 + (n / 8));
+    y = 255 - (last_sound_level / 4 + (n / 8));
     for (p = NP_OUTER; p < NP_COUNT; p++) {
         pixels.setPixelColor(p, pixels.Color(y, y, y));
     }
