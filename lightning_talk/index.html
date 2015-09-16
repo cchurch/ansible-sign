@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>The Ansible Sign</title>
+
+    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+    <meta name="author" content="Hakim El Hattab">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/blood.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <style type="text/css">
+      .reveal section img.plain {
+        background: none;
+        border: none;
+        box-shadow: none;
+      }
+    </style>
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+
+        <section>
+          <img class="plain" src="./BrushedMetalA.png">
+          <h2>The Ansible Sign</h2>
+        </section>
+
+        <section>
+          <section>
+            <h2>v0</h2>
+            <p><img data-src="https://pbs.twimg.com/media/BxGKBEXCAAA2RsH.jpg" style="width: 35%;"></p>
+            <p class="fragment">Oooh shiny...</p>
+            <p class="fragment">...when the lights are on.</p>
+            <!-- ><p><small><a href="https://twitter.com/ansible/status/509339985976520704">https://twitter.com/ansible/status/509339985976520704</a></small></p> -->
+          </section>
+          <section>
+            <h2>v0.9</h2>
+            <iframe width="640" height="480" data-src="https://www.youtube.com/embed/kexz8Hs6eN4?rel=0&amp;controls=0&amp;showinfo=0&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>
+          </section>
+          <section>
+            <h2>v1.0</h2>
+            <iframe width="640" height="480" data-src="https://www.youtube.com/embed/x04pbr9QP7U?rel=0&amp;controls=0&amp;showinfo=0&amp;autoplay=1" frameborder="0" allowfullscreen></iframe>
+          </section>
+          <section>
+            <h2>v2.0-alpha</h2>
+            <p><video data-src="https://video.twimg.com/ext_tw_video/635956774760247296/pu/vid/1280x720/5rO6uhFFo0BaR9UA.mp4"></p>
+          </section>
+          <section>
+            <h2>v2.0</h2>
+            <p><img data-src="http://ansiblesigncamera.local:8114/mjpg/video.mjpg"></p>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Teensy 2.0</h2>
+            <p><img data-src="https://www.pjrc.com/store/teensy_2.jpg" style="width: 35%;"></p>
+            <ul>
+              <li class="fragment">Cheap ($16)</li>
+              <li class="fragment">Arduino Tools (w/ Teensyduino)</li>
+              <li class="fragment">Only USB</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Arduino Yún</h2>
+            <p><img data-src="https://www.arduino.cc/en/uploads/Main/A000008_featured.jpg" style="width: 35%;"></p>
+            <ul>
+              <li class="fragment">Ethernet + WiFi</li>
+              <li class="fragment">Arduino Tools + OpenWRT Linux</li>
+              <li class="fragment">$75</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Arduino Yún</h2>
+            <p><img data-src="https://www.arduino.cc/en/uploads/Main/A000008_featured.jpg" style="width: 35%;"></p>
+            <p class="fragment">Dropbear (SSH server)<span class="fragment"> + Python</span></p>
+            <pre class="fragment"><code class="sh">$ ANSIBLE_SCP_IF_SSH=1 ansible -i ansiblesign, all -m ping
+ansiblesign | success >> {
+    "changed": false,
+    "ping": "pong"
+}</code></pre>
+          </section>
+          <section>
+            <h2>NeoPixel Strips</h2>
+            <p><img data-src="https://learn.adafruit.com/system/assets/assets/000/013/709/medium640/leds_Strip30Black.jpg?1390355890" style="width: 35%;"></p>
+            <ul>
+              <li class="fragment">30 LEDs/meter</li>
+              <li class="fragment">$17/meter</li>
+              <li class="fragment">97 "pixels" (52 + 45)</li>
+            </ul>
+          </section>
+          <section>
+            <h2>NeoPixel</h2>
+            <p><img data-src="https://learn.adafruit.com/system/assets/assets/000/010/668/medium800/leds_neo-closeup.jpg?1377729545" style="width: 35%;"></p>
+            <ul>
+              <li class="fragment">Individually Controllable</li>
+              <li class="fragment">24-bit RGB</li>
+              <li class="fragment">60mA @ 5V (300mW)</li>
+            </ul>
+          </section>
+          <section>
+            <h2>NeoPixel Library</h2>
+            <pre><code data-trim contenteditable class="cpp">#include "Adafruit_NeoPixel.h"
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(97, 12,
+  NEO_GRB + NEO_KHZ800);
+
+void setup() {
+    pixels.begin();
+    pixels.setBrightness(255);
+    pixels.show();
+}
+
+void loop() {
+    for (int i = 0; i &lt; 97; i++) {
+        pixels.setPixelColor(i, pixels.Color(255, 255, 255));
+    }
+    pixels.show();
+}</code></pre>
+          </section>
+        </section>
+
+        <section>
+          <h2>Demo</h2>
+          <p><img data-src="http://ansiblesigncamera.local:8114/mjpg/video.mjpg"></p>
+        </section>
+
+        <section>
+          <h2>Contributing</h2>
+          <p class="fragment">Submit PRs or Issues at:<br/><a href="https://github.com/cchurch/ansible-sign">https://github.com/cchurch/ansible-sign</a></p>
+          <p class="fragment">Log in at:<br/><a href="http://ansiblesign.local/">http://ansiblesign.local</a> (HTTP)<br/><a href="ssh://root@ansiblesign.local">root@ansiblesign.local</a> (SSH)</p>
+          <p class="fragment"><small><i>Ask for password or send SSH public key.</i></small></p>
+        </section>
+
+        <section data-background="http://ansiblesigncamera.local:8114/mjpg/video.mjpg">
+          <h2>Questions?</h2>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+          <p class="fragment">And then?</p>
+        </section>
+
+      </div>
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'convex', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
