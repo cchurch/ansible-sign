@@ -178,6 +178,59 @@ int split_ansible_colors(int n)
     return n;
 }
 
+#define RGB_BLACK { r = g = b = 0; }
+#define RGB_WHITE { r = g = b = y; }
+#define RGB_ANSIBLE_RED { r = y; g = y * 0x58 / 256; b = y * 0x50 / 256; }
+#define RGB_ANSIBLE_GREEN { r = y * 0x24 / 256; g = y * 0xc5 / 256; b = y * 0x57 / 256; }
+
+// Ansible red/green/white colors.
+int spinning_ansible_colors(int n, int s)
+{
+    int y = 0;
+    int p = 0;
+
+    y = get_sound_level(10) / 4 + 128;
+
+    for (p = 0; p < NP_OUTER; p++) {
+        int r, g, b, q;
+        if (p == (n % NP_OUTER) || p < (n / NP_OUTER)) {
+            q = s;
+        }
+        else {
+            q = s + 3;
+        }
+        switch (q % 4) {
+            case 0:
+                RGB_ANSIBLE_GREEN;
+                break;
+            case 1:
+                RGB_ANSIBLE_RED;
+                break;
+            case 2:
+                RGB_WHITE;
+                break;
+            default:
+                RGB_BLACK;
+                break;
+        }
+        if (s <= 3) {
+            pixels.setPixelColor((p + 3) % NP_OUTER, pixels.Color(r, g, b));
+        }
+        else {
+            pixels.setPixelColor((NP_OUTER - p + 2) % NP_OUTER, pixels.Color(r, g, b));
+        }
+    }
+
+    pixels.show();
+    if ((n % NP_OUTER) < (n / NP_OUTER)) {
+        n += (n / NP_OUTER) - (n % NP_OUTER);
+    }
+    n = (n < (NP_OUTER * NP_OUTER)) ? n + 1 : -1;
+
+    return n;
+}
+
+
 // Blue, orange, white.
 int durham_bulls_colors(int n)
 {
@@ -314,18 +367,28 @@ void loop()
         case 3:
             n_outer = pulsing_white(n_outer);
             break;*/
-        /*case 4:
+        case 4:
             n_outer = split_ansible_colors(n_outer);
-            break;*/
+            break;
         /*case 5:
             n_outer = durham_bulls_colors(n_outer);
             break;*/
         /*case 6:
             n_outer = sound_activated(n_outer);
             break;*/
-        case 7:
+        /*case 7:
           n_outer = flickering_flames(n_outer);
-          break;
+          break;*/
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+            n_outer = spinning_ansible_colors(n_outer, s_outer - 10);
+            break;
         case 99:
             s_outer = 0;
             break;
@@ -338,8 +401,8 @@ void loop()
         n_outer = 0;
     }
 
-    //n_inner = sound_activated_inner(n_inner);
-    n_inner = flickering_flames_inner(n_inner);
+    n_inner = sound_activated_inner(n_inner);
+    //n_inner = flickering_flames_inner(n_inner);
     if (n_inner < 0) {
         n_inner = 0;
     }
