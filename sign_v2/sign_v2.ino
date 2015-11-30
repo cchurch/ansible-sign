@@ -147,6 +147,7 @@ int pulsing_white(int n)
     return n;
 }
 
+
 // Ansible red/green colors.
 int split_ansible_colors(int n)
 {
@@ -239,6 +240,55 @@ int sound_activated_inner(int n)
     return (n < 256) ? n + 1 : -1;  
 }
 
+// Flickering Flames.
+int flickering_flames(int n)
+{
+    int y = 0;
+    int p = 0;
+
+    y = get_sound_level(50);
+    //y = last_sound_level / 4 + 128;
+
+    for (p = 0; p < NP_OUTER;) {
+        int r, g, b;
+        r = (7 * p * y) % 128 + 128;
+        g = (5 * p * y) % 96 + 160;
+        g = (g > r) ? r : g;
+        b = 0;
+        pixels.setPixelColor(p, pixels.Color(r, g, b));
+        p += (n % 9) + 1;
+    }    
+
+    pixels.show();
+    n = (n < NP_OUTER * 16) ? n + 1 : -1;
+
+    return n;
+}
+
+// Flickering Flames.
+int flickering_flames_inner(int n)
+{
+    int y = 0;
+    int p = 0;
+
+    y = last_sound_level;
+
+    for (p = NP_OUTER; p < NP_COUNT;) {
+        int r, g, b;
+        r = (7 * p * y) % 128 + 128;
+        g = (5 * p * y) % 96 + 160;
+        g = (g > r) ? r : g;
+        b = 0;
+        pixels.setPixelColor(p, pixels.Color(r, g, b));
+        p += (n % 3) + 1;
+    }    
+
+    pixels.show();
+    n = (n < NP_OUTER * 16) ? n + 1 : -1;
+
+    return n;
+}
+
 void loop()
 {
     // Current sequence.
@@ -264,15 +314,18 @@ void loop()
         case 3:
             n_outer = pulsing_white(n_outer);
             break;*/
-        case 4:
+        /*case 4:
             n_outer = split_ansible_colors(n_outer);
-            break;
+            break;*/
         /*case 5:
             n_outer = durham_bulls_colors(n_outer);
             break;*/
         /*case 6:
             n_outer = sound_activated(n_outer);
             break;*/
+        case 7:
+          n_outer = flickering_flames(n_outer);
+          break;
         case 99:
             s_outer = 0;
             break;
@@ -285,7 +338,8 @@ void loop()
         n_outer = 0;
     }
 
-    n_inner = sound_activated_inner(n_inner);
+    //n_inner = sound_activated_inner(n_inner);
+    n_inner = flickering_flames_inner(n_inner);
     if (n_inner < 0) {
         n_inner = 0;
     }
