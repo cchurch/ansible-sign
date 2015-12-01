@@ -1,0 +1,139 @@
+/*
+ * Ansible Sign Blinky Lights
+ * Runs on Teensy 2.0 and the Arduino Yún.
+ * Copyright 2015 Chris Church <chris@ninemoreminutes.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "Adafruit_NeoPixel.h"
+
+#define NP_COUNT 97
+#define NP_PIN 12
+
+// Run in bright mode (set to 0 when working up close to avoid blinding yourself).
+#define NP_BRIGHT 1
+
+// Outside ring, clockwise.
+#define NP_OUTER 52
+
+// Inside ring, counterclockwise.
+#define NP_INNER 45
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NP_COUNT, NP_PIN, NEO_GRB + NEO_KHZ800);
+
+void setup()
+{
+    pixels.begin();
+    pixels.setBrightness(NP_BRIGHT ? 240 : 31);
+}
+
+int last_sound_level = 0;
+
+int get_sound_level(int ms)
+{
+    unsigned long start_ms = millis();
+    unsigned int d_min = 1024;
+    unsigned int d_max = 0;
+    unsigned int d_sample;
+
+    while (millis() - start_ms < ms) {
+        d_sample = analogRead(0);
+        if (d_sample < 1024) {
+            if (d_sample > d_max) {
+                d_max = d_sample;
+            }
+            if (d_sample < d_min) {
+                d_min = d_sample;
+            }
+        }
+    }
+    if (d_max > 511) {
+        d_max = 511;
+    }
+    last_sound_level = (d_max - d_min) / 2;
+    return last_sound_level;
+}
+
+const unsigned char color_map[][4] = {
+{% for cm in color_map %}    { {{cm.r}}, {{cm.g}}, {{cm.b}}, {{cm.a}} },
+{% endfor %}    { 0, 0, 0, 255 },
+};
+
+const int color_map_length = {{color_map|length}};
+
+const PROGMEM unsigned char rows[] = {
+{% for row in rows %}    {% for r in row %}{{r}}, {% endfor %}0,
+{% endfor %}    0,
+};
+
+const int rows_length = {{rows|length}};
+
+int display_row(int n)
+{
+    int p = 0;
+    int d = 0;
+    unsigned char *m;
+    int c = 0;
+
+    while (c < n) {
+        if (pgm_read_byte_near(rows + d) > 0) {
+            d += 2;
+        }
+        else {
+            d++;
+            c++;
+        }
+    }
+    c = 0;
+
+    for (p = 0; p < NP_COUNT; p++) {
+        int r, g, b, a;
+        if (c == 0) {
+            c = pgm_read_byte_near(rows + d);
+            if (c > 0) {
+                m = (unsigned char *)color_map[pgm_read_byte_near(rows + d + 1)];
+                d += 2;
+            }
+            else {
+                c = -1;
+                m = (unsigned char *)color_map[color_map_length];
+            }
+        }
+        if (c > 0) {
+            c--;
+        }
+        a = 255 - ((255 - m[3]) * last_sound_level / 2) / 255;
+        r = m[0] * a / 255;
+        g = m[1] * a / 255;
+        b = m[2] * a / 255;
+        pixels.setPixelColor(p, pixels.Color(r, g, b));
+    }
+
+    pixels.show();
+    n = (n < (rows_length - 1)) ? n + 1 : -1;
+
+    return n;
+}
+
+void loop()
+{
+    static int n = 0;
+
+    get_sound_level(10);
+    n = display_row(n);
+    if (n < 0) {
+        n = 0;
+    }
+}
