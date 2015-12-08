@@ -29,7 +29,11 @@ def get_img_data(filename):
                 pass
             row.extend([1, rowm])
         rows.append(row)
+    img_size = sum([len(r) + 1 for r in rows]) + len(rows) + 1
+    if img_size > 22000:
+        raise ValueError('given image pixels use %d bytes, max is %d' % (img_size, 22000))
     color_map = [dict(zip('rgba', x)) for x in colors]
+    color_size = 4 * len(colors) + 4
     return {'color_map': color_map, 'rows': rows}
 
 
