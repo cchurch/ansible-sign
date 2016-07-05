@@ -180,6 +180,8 @@ int split_ansible_colors(int n)
 
 #define RGB_BLACK { r = g = b = 0; }
 #define RGB_WHITE { r = g = b = y; }
+#define RGB_RED { r = y; g = b = 0; }
+#define RGB_BLUE { r = g = 0; b = y; }
 #define RGB_ANSIBLE_RED { r = y; g = y * 0x58 / 256; b = y * 0x50 / 256; }
 #define RGB_ANSIBLE_GREEN { r = y * 0x24 / 256; g = y * 0xc5 / 256; b = y * 0x57 / 256; }
 
@@ -190,7 +192,7 @@ int spinning_ansible_colors(int n, int s)
     int p = 0;
 
     y = get_sound_level(10) / 4 + 128;
-
+ 
     for (p = 0; p < NP_OUTER; p++) {
         int r, g, b, q;
         if (p == (n % NP_OUTER) || p < (n / NP_OUTER)) {
@@ -230,6 +232,53 @@ int spinning_ansible_colors(int n, int s)
     return n;
 }
 
+// Red/white/blue colors.
+int spinning_rwb_colors(int n, int s)
+{
+    int y = 0;
+    int p = 0;
+
+    //y = get_sound_level(10) / 4 + 128;
+    y = 255;
+
+    for (p = 0; p < NP_OUTER; p++) {
+        int r, g, b, q;
+        if (p == (n % NP_OUTER) || p < (n / NP_OUTER)) {
+            q = s;
+        }
+        else {
+            q = s + 5;
+        }
+        switch (q % 6) {
+            case 0:
+                RGB_RED;
+                break;
+            case 2:
+                RGB_WHITE;
+                break;
+            case 4:
+                RGB_BLUE;
+                break;
+            default:
+                RGB_BLACK;
+                break;
+        }
+        if (s <= 5) {
+            pixels.setPixelColor((p + 3) % NP_OUTER, pixels.Color(r, g, b));
+        }
+        else {
+            pixels.setPixelColor((NP_OUTER - p + 2) % NP_OUTER, pixels.Color(r, g, b));
+        }
+    }
+
+    pixels.show();
+    if ((n % NP_OUTER) < (n / NP_OUTER)) {
+        n += (n / NP_OUTER) - (n % NP_OUTER);
+    }
+    n = (n < (NP_OUTER * NP_OUTER)) ? n + 1 : -1;
+
+    return n;
+}
 
 // Blue, orange, white.
 int durham_bulls_colors(int n)
@@ -284,7 +333,7 @@ int sound_activated_inner(int n)
     //y = get_sound_level(100) / 2 + (n / 4);
     //y = last_sound_level / 2 + (n / 4);
     //y = 255 - (get_sound_level(100) / 4 + (n / 8));
-    y = 255 - (last_sound_level / 4 + (n / 8));
+    y = 255;// - (last_sound_level / 4 + (n / 8));
     for (p = NP_OUTER; p < NP_COUNT; p++) {
         pixels.setPixelColor(p, pixels.Color(y, y, y));
     }
@@ -367,9 +416,9 @@ void loop()
         case 3:
             n_outer = pulsing_white(n_outer);
             break;*/
-        case 4:
+        /*case 4:
             n_outer = split_ansible_colors(n_outer);
-            break;
+            break;*/
         /*case 5:
             n_outer = durham_bulls_colors(n_outer);
             break;*/
@@ -387,7 +436,15 @@ void loop()
         case 15:
         case 16:
         case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+        /*case 17:
             n_outer = spinning_ansible_colors(n_outer, s_outer - 10);
+            break;*/
+        case 22:
+            n_outer = spinning_rwb_colors(n_outer, s_outer - 10);
             break;
         case 99:
             s_outer = 0;
