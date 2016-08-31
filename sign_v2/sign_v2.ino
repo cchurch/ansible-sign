@@ -31,12 +31,17 @@
 // Inside ring, counterclockwise.
 #define NP_INNER 45
 
+// Motion sensor pin.
+#define PIR_PIN 8
+
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NP_COUNT, NP_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()
 {
     pixels.begin();
     pixels.setBrightness(NP_BRIGHT ? 240 : 31);
+    pinMode(PIR_PIN, INPUT);
+    digitalWrite(PIR_PIN, LOW); 
 }
 
 int last_sound_level = 0;
@@ -64,6 +69,11 @@ int get_sound_level(int ms)
     }
     last_sound_level = (d_max - d_min) / 2;
     return last_sound_level;
+}
+
+int get_motion()
+{
+    return digitalRead(PIR_PIN);
 }
     
 // Set brightness and color based on sequence counter.
@@ -191,7 +201,10 @@ int spinning_ansible_colors(int n, int s)
     int y = 0;
     int p = 0;
 
-    y = get_sound_level(10) / 4 + 128;
+    y = get_sound_level(10) / 4 + 64;
+    if (get_motion()) {
+        y += 64;
+    }
  
     for (p = 0; p < NP_OUTER; p++) {
         int r, g, b, q;
@@ -238,8 +251,8 @@ int spinning_rwb_colors(int n, int s)
     int y = 0;
     int p = 0;
 
-    //y = get_sound_level(10) / 4 + 128;
-    y = 255;
+    y = get_sound_level(10) / 4 + 128;
+    //y = 255;
 
     for (p = 0; p < NP_OUTER; p++) {
         int r, g, b, q;
@@ -333,7 +346,11 @@ int sound_activated_inner(int n)
     //y = get_sound_level(100) / 2 + (n / 4);
     //y = last_sound_level / 2 + (n / 4);
     //y = 255 - (get_sound_level(100) / 4 + (n / 8));
-    y = 255;// - (last_sound_level / 4 + (n / 8));
+    y = 255 - (last_sound_level / 4 + (n / 8));
+    if (!get_motion()) {
+        y -= 128;
+    }
+
     for (p = NP_OUTER; p < NP_COUNT; p++) {
         pixels.setPixelColor(p, pixels.Color(y, y, y));
     }
@@ -436,16 +453,15 @@ void loop()
         case 15:
         case 16:
         case 17:
-        case 18:
+            n_outer = spinning_ansible_colors(n_outer, s_outer - 10);
+            break;
+        /*case 18:
         case 19:
         case 20:
         case 21:
-        /*case 17:
-            n_outer = spinning_ansible_colors(n_outer, s_outer - 10);
-            break;*/
         case 22:
             n_outer = spinning_rwb_colors(n_outer, s_outer - 10);
-            break;
+            break;*/
         case 99:
             s_outer = 0;
             break;
