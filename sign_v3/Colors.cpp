@@ -60,16 +60,16 @@ void
 Color::applySound(uint8_t sound)
 {
     if (m_sound > 0) {
-        
+        darken((2 * m_sound + 1) - sound);
     }
     else if (m_sound < 0) {
-        
+        darken((-2 * m_sound - 1) - sound);
     }
 }
 
-const Color BLACK = Color();
-const Color WHITE = Color(0xff, 0xff, 0xff);
-const Color RED = Color(0xff, 0, 0);
+const Color BLACK = Color(0, 0, 0, 32, 32);
+const Color WHITE = Color(0xff, 0xff, 0xff, 32, 32);
+const Color RED = Color(0xff, 0, 0, 32, 32);
 const Color GREEN = Color(0, 0xff, 0);
 const Color BLUE = Color(0, 0, 0xff);
 const Color MANGO = Color(0xff, 0x58, 0x50);  // Ansible Red (exact)

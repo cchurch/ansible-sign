@@ -29,17 +29,19 @@ class Pattern {
   public:
 
     Pattern(uint16_t offset = 0, uint16_t count = 0,
-            const Color &primaryColor = BLACK,
-            const Color &secondaryColor = BLACK,
-            const Color &tertiaryColor = BLACK);
+            const Color primaryColor = BLACK,
+            const Color secondaryColor = BLACK,
+            const Color tertiaryColor = BLACK);
     virtual ~Pattern();
 
     virtual void reset();
     virtual bool tick(Sign *pSign);
 
     void
+    setFlags(uint8_t flags),
     setPixelOffset(uint16_t offset),
     setPixelCount(uint16_t count),
+    setPixelShift(uint16_t shift),
     setPrimaryColor(const Color &color),
     setSecondaryColor(const Color &color),
     setTertiaryColor(const Color &color);
@@ -49,10 +51,16 @@ class Pattern {
 
   protected:
 
+    void setRelativePixelColor(Sign *pSign, uint16_t pixel, const Color &color);
     void updateAll(Sign *pSign, const Color &color);
 
-    uint16_t m_pixelOffset;
-    uint16_t m_pixelCount;
+    uint8_t
+    m_flags;
+
+    uint16_t
+    m_pixelOffset,
+    m_pixelCount,
+    m_pixelShift;
 
     Color
     m_primaryColor,
@@ -66,9 +74,9 @@ class SolidPattern : public Pattern {
   public:
 
     SolidPattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color &primaryColor = BLACK,
-                 const Color &secondaryColor = BLACK,
-                 const Color &tertiaryColor = BLACK);
+                 const Color primaryColor = BLACK,
+                 const Color secondaryColor = BLACK,
+                 const Color tertiaryColor = BLACK);
     virtual ~SolidPattern();
 
     virtual void reset();
@@ -77,7 +85,7 @@ class SolidPattern : public Pattern {
   protected:
 
     uint8_t
-    m_currentColorIndex;
+    m_index;
 
 };
 
@@ -86,9 +94,9 @@ class FadePattern : public Pattern {
   public:
 
     FadePattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color &primaryColor = BLACK,
-                 const Color &secondaryColor = BLACK,
-                 const Color &tertiaryColor = BLACK);
+                 const Color primaryColor = BLACK,
+                 const Color secondaryColor = BLACK,
+                 const Color tertiaryColor = BLACK);
     virtual ~FadePattern();
 
     virtual void reset();
@@ -104,6 +112,87 @@ class FadePattern : public Pattern {
 
 };
 
+class SpinPattern : public Pattern {
+
+  public:
+
+    SpinPattern(uint16_t offset = 0, uint16_t count = 0,
+                 const Color primaryColor = BLACK,
+                 const Color secondaryColor = BLACK,
+                 const Color tertiaryColor = BLACK);
+    virtual ~SpinPattern();
+
+    virtual void reset();
+    virtual bool tick(Sign *pSign);
+
+  protected:
+
+    uint16_t
+    m_spinIndex;
+
+};
+
+class StackPattern : public Pattern {
+
+  public:
+
+    StackPattern(uint16_t offset = 0, uint16_t count = 0,
+                 const Color primaryColor = BLACK,
+                 const Color secondaryColor = BLACK,
+                 const Color tertiaryColor = BLACK);
+    virtual ~StackPattern();
+
+    virtual void reset();
+    virtual bool tick(Sign *pSign);
+
+  protected:
+
+    uint16_t
+    m_currentIndex,
+    m_stackIndex;
+
+};
+
+class HalvesPattern : public Pattern {
+
+  public:
+
+    HalvesPattern(uint16_t offset = 0, uint16_t count = 0,
+                 const Color primaryColor = BLACK,
+                 const Color secondaryColor = BLACK,
+                 const Color tertiaryColor = BLACK);
+    virtual ~HalvesPattern();
+
+    virtual void reset();
+    virtual bool tick(Sign *pSign);
+
+  protected:
+
+    uint16_t
+    m_splitIndex;
+
+};
+
+class RandomPattern : public Pattern {
+
+  public:
+
+    RandomPattern(uint16_t offset = 0, uint16_t count = 0,
+                 const Color primaryColor = BLACK,
+                 const Color secondaryColor = BLACK,
+                 const Color tertiaryColor = BLACK);
+    virtual ~RandomPattern();
+
+    virtual void reset();
+    virtual bool tick(Sign *pSign);
+
+  protected:
+
+    static const uint8_t m_bitsLength = 8;
+    uint8_t
+    m_bits[m_bitsLength];
+
+};
 
 #endif  // PATTERNS_H
 

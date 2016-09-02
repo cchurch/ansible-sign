@@ -24,6 +24,28 @@
 #include "Adafruit_NeoPixel.h"
 #include "Colors.h"
 
+class Sign;
+
+class Region {
+
+  public:
+
+    Region();
+    ~Region();
+
+    void
+    setPixelOffset(uint16_t offset),
+    setPixelCount(uint16_t count);
+
+    uint16_t
+    getPixelOffset(),
+    getPixelCount();
+    
+  protected:
+
+    
+};
+
 class Sign {
 
   public:
