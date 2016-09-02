@@ -1,0 +1,22 @@
+---
+
+- hosts: sign
+  gather_facts: false
+  tasks:
+    - name: install autossh
+      opkg:
+        name: autossh
+        state: present
+        update_cache: yes
+      when: false
+    - name: update autossh config
+      uci:
+        package: autossh
+        type: autossh
+        name: '{{item.name}}'
+        value: '{{item.value}}'
+      with_items: '{{sign_autossh_config}}'
+      # notify: restart autossh
+  handlers:
+    - name: restart autossh # FIXME: Current drops the connection before finishing.
+      command: /etc/init.d/autossh restart

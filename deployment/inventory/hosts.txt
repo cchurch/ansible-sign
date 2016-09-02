@@ -1,0 +1,2 @@
+[sign]
+ansiblesign ansible_ssh_user=root

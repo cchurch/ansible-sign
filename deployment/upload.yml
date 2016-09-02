@@ -1,0 +1,13 @@
+---
+
+- hosts: sign
+  gather_facts: false
+  tasks:
+    - name: upload file
+      copy:
+        src: '{{sign_hex_src}}'
+        dest: '{{sign_hex_dest}}'
+    - name: stop bridge if running
+      command: kill-bridge
+    - name: program the sign
+      command: run-avrdude '{{sign_hex_dest}}' -v

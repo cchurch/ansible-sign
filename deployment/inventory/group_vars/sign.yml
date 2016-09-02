@@ -1,0 +1,14 @@
+---
+
+sign_hex_src: '{{playbook_dir}}/../sign_v3/sign_v3.ino.with_bootloader.yun.hex'
+sign_hex_dest: /tmp/sign.hex
+
+sign_autossh_config:
+  - name: ssh
+    value: -i /etc/dropbear/id_rsa -N -T -R 42022:localhost:22 -R 42080:localhost:80 -R 42180:10.195.117.170:80 autossh@wink.ixmm.net
+  - name: gatetime
+    value: 0
+  - name: monitorport
+    value: 42000
+  - name: poll
+    value: 300
