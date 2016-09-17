@@ -1,5 +1,5 @@
 /*
- * Ansible Sign Blinky Lights - Sign
+ * Ansible Sign Blinky Lights - Sign Regions
  * Runs on Teensy 2.0 and the Arduino Yún.
  * Copyright 2016 Chris Church <chris@ninemoreminutes.com>
  *
@@ -17,57 +17,62 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGN_H
-#define SIGN_H
+#ifndef REGION_H
+#define REGION_H
 
 #include <Arduino.h>
-#include "Adafruit_NeoPixel.h"
 #include "ConfigTypes.h"
 #include "Colors.h"
 
-class Sign {
+class Sign;
+
+class Region {
 
   public:
 
-    Sign(int pixelCount = 0, int pixelPin = -1, int motionPin = -1, int soundInput = -1);
-    Sign(config_pins_t &pins_t, config_options_t &options_t);
-    ~Sign();
+    Region(Sign *pSign = 0,
+           uint16_t offset = 0,
+           uint16_t count = 0,
+           uint8_t shift = 0,
+           uint8_t flags = 0);
+    Region(config_region_t &region_t);
+    ~Region();
 
     void
-    setup(),
-    setBrightness(uint8_t brightness),
-    setMotionPin(int pin),
-    setPixelColor(uint16_t pixel, const Color &color),
-    setPixelCount(int count),
-    setPixelPin(int pin),
-    setSoundInput(int input),
-    showPixels(),
-    wait(int ms);
+    setSign(Sign *pSign),
+    setOffset(uint16_t offset),
+    setCount(uint16_t count),
+    setShift(uint8_t shift),
+    setFlags(uint8_t flags),
+    setRelativePixel(uint16_t pixel, const Color &color),
+    setAllPixels(const Color &color),
+    showPixels();
 
-    int
-    getMotionPin() const,
-    getPixelCount() const,
-    getPixelPin() const,
-    getSoundInput() const;
+    Sign *
+    getSign();
+
+    uint16_t
+    getOffset(),
+    getCount();
 
     uint8_t
-    getBrightness() const,
-    getMotion() const,
-    getSound() const;
+    getShift(),
+    getFlags();
 
   protected:
 
-    Adafruit_NeoPixel
-    m_pixels;
-
-    int
-    m_motionPin,
-    m_soundInput;
+    Sign *
+    m_pSign;
+ 
+    uint16_t
+    m_offset,
+    m_count;
 
     uint8_t
-    m_lastSound;
-
+    m_shift,
+    m_flags;
+    
 };
 
-#endif  // SIGN_H
+#endif  // REGION_H
 

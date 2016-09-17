@@ -19,14 +19,16 @@
 
 #include "Patterns.h"
 
-Pattern::Pattern(uint16_t offset, uint16_t count,
-                 const Color primaryColor,
-                 const Color secondaryColor,
-                 const Color tertiaryColor) :
-    m_flags(0), m_pixelOffset(offset), m_pixelCount(count), m_pixelShift(0),
+Pattern::Pattern(Region *pRegion,
+                 const Color &primaryColor,
+                 const Color &secondaryColor,
+                 const Color &tertiaryColor,
+                 uint8_t flags) :
+    m_pRegion(pRegion),
     m_primaryColor(primaryColor),
     m_secondaryColor(secondaryColor),
-    m_tertiaryColor(tertiaryColor)
+    m_tertiaryColor(tertiaryColor),
+    m_flags(flags)
 {
 }
 
@@ -40,61 +42,9 @@ Pattern::reset()
 }
 
 bool
-Pattern::tick(Sign *pSign)
+Pattern::update()
 {
     return false;
-}
-
-void
-Pattern::setRelativePixelColor(Sign *pSign, uint16_t pixel, const Color &color)
-{
-    if (pSign) {
-        if (m_pixelShift) {
-            pixel = (pixel + m_pixelShift) % m_pixelCount;
-        }
-        if (m_flags & 0x01) { // reverse
-            pixel = m_pixelCount - pixel - 1;
-        }
-        pixel += m_pixelOffset;
-        if (pixel < pSign->getPixelCount()) {
-            pSign->setPixelColor(pixel, color);
-        }
-    }
-}
-
-void
-Pattern::updateAll(Sign *pSign, const Color &color)
-{
-    if (pSign) {
-        for (uint16_t p = 0; p < m_pixelCount; p++) {
-            setRelativePixelColor(pSign, p, color);
-        }
-        pSign->showPixels();
-    }
-}
-
-void
-Pattern::setFlags(uint8_t flags)
-{
-    m_flags = flags;
-}
-
-void
-Pattern::setPixelOffset(uint16_t offset)
-{
-    m_pixelOffset = offset;
-}
-
-void
-Pattern::setPixelCount(uint16_t count)
-{
-    m_pixelCount = count;
-}
-
-void
-Pattern::setPixelShift(uint16_t shift)
-{
-    m_pixelShift = shift;
 }
 
 void
@@ -115,17 +65,42 @@ Pattern::setTertiaryColor(const Color &color)
     m_tertiaryColor = color;
 }
 
+void
+Pattern::setFlags(uint8_t flags)
+{
+    m_flags = flags;
+}
+
 uint16_t
 Pattern::getPixelCount()
 {
-    return m_pixelCount;
+    if (m_pRegion) {
+        return m_pRegion->getCount();
+    }
+    else {
+        return 0;
+    }
 }
 
-SolidPattern::SolidPattern(uint16_t offset, uint16_t count,
-                           const Color primaryColor,
-                           const Color secondaryColor,
-                           const Color tertiaryColor) :
-    Pattern(offset, count, primaryColor, secondaryColor, tertiaryColor),
+void
+Pattern::setRelativePixel(uint16_t pixel, const Color &color)
+{
+    uint16_t pixelCount = getPixelCount();
+
+    if (m_pRegion && pixelCount) {
+        if (m_flags & 0x01) { // reverse
+            pixel = pixelCount - pixel - 1;
+        }
+        m_pRegion->setRelativePixel(pixel, color);
+    }
+}
+    
+SolidPattern::SolidPattern(Region *pRegion,
+                           const Color &primaryColor,
+                           const Color &secondaryColor,
+                           const Color &tertiaryColor,
+                           uint8_t flags) :
+    Pattern(pRegion, primaryColor, secondaryColor, tertiaryColor, flags),
     m_index(0)
 {
 }
@@ -141,23 +116,25 @@ SolidPattern::reset()
 }
 
 bool
-SolidPattern::tick(Sign *pSign)
+SolidPattern::update()
 {
-    if (m_index >= m_pixelCount || !pSign) {
+    if (m_index >= getPixelCount() || !m_pRegion) {
         return false;
     }
 
-    updateAll(pSign, m_primaryColor);
+    m_pRegion->setAllPixels(m_primaryColor);
+    m_pRegion->showPixels();
 
     m_index++;
     return true;
 }
 
-FadePattern::FadePattern(uint16_t offset, uint16_t count,
-                         const Color primaryColor,
-                         const Color secondaryColor,
-                         const Color tertiaryColor) :
-    Pattern(offset, count, primaryColor, secondaryColor, tertiaryColor),
+FadePattern::FadePattern(Region *pRegion,
+                         const Color &primaryColor,
+                         const Color &secondaryColor,
+                         const Color &tertiaryColor,
+                         uint8_t flags) :
+    Pattern(pRegion, primaryColor, secondaryColor, tertiaryColor, flags),
     m_fadeIndex(0)
 {
 }
@@ -175,18 +152,20 @@ FadePattern::reset()
 uint8_t
 FadePattern::mixValues(uint8_t v1, uint8_t v2)
 {
-    if (!m_pixelCount) {
+    uint16_t pixelCount = getPixelCount();
+
+    if (!pixelCount) {
         return v1;
     }
-    return (v1 * (m_pixelCount - m_fadeIndex) + v2 * m_fadeIndex) / m_pixelCount;
+    return (v1 * (pixelCount - m_fadeIndex) + v2 * m_fadeIndex) / pixelCount;
 }
 
 bool
-FadePattern::tick(Sign *pSign)
+FadePattern::update()
 {
     Color mixedColor = BLACK;
 
-    if (m_fadeIndex >= m_pixelCount) {
+    if (m_fadeIndex >= getPixelCount() || !m_pRegion) {
         return false;
     }
 
@@ -195,17 +174,19 @@ FadePattern::tick(Sign *pSign)
     mixedColor.m_blue = mixValues(m_primaryColor.m_blue, m_secondaryColor.m_blue);
     mixedColor.m_motion = mixValues(m_primaryColor.m_motion, m_secondaryColor.m_motion);
     mixedColor.m_sound = mixValues(m_primaryColor.m_sound, m_secondaryColor.m_sound);
-    updateAll(pSign, mixedColor);
+    m_pRegion->setAllPixels(mixedColor);
+    m_pRegion->showPixels();
 
     m_fadeIndex++;
     return true;
 }
 
-SpinPattern::SpinPattern(uint16_t offset, uint16_t count,
-                         const Color primaryColor,
-                         const Color secondaryColor,
-                         const Color tertiaryColor) :
-    Pattern(offset, count, primaryColor, secondaryColor, tertiaryColor),
+SpinPattern::SpinPattern(Region *pRegion,
+                         const Color &primaryColor,
+                         const Color &secondaryColor,
+                         const Color &tertiaryColor,
+                         uint8_t flags) :
+    Pattern(pRegion, primaryColor, secondaryColor, tertiaryColor, flags),
     m_spinIndex(0)
 {
 }
@@ -221,33 +202,34 @@ SpinPattern::reset()
 }
 
 bool
-SpinPattern::tick(Sign *pSign)
+SpinPattern::update()
 {
-    if (m_spinIndex >= m_pixelCount) {
+    uint16_t pixelCount = getPixelCount();
+
+    if (m_spinIndex >= pixelCount || !m_pRegion) {
         return false;
     }
 
-    if (pSign) {
-        for (uint16_t p = 0; p < m_pixelCount; p++) {
-            if (p <= m_spinIndex) {
-                setRelativePixelColor(pSign, p, m_secondaryColor);
-            }
-            else {
-                setRelativePixelColor(pSign, p, m_primaryColor);
-            }
+    for (uint16_t p = 0; p < pixelCount; p++) {
+        if (p <= m_spinIndex) {
+            setRelativePixel(p, m_secondaryColor);
         }
-        pSign->showPixels();
+        else {
+            setRelativePixel(p, m_primaryColor);
+        }
     }
+    m_pRegion->showPixels();
 
     m_spinIndex++;
     return true;
 }
 
-StackPattern::StackPattern(uint16_t offset, uint16_t count,
-                         const Color primaryColor,
-                         const Color secondaryColor,
-                         const Color tertiaryColor) :
-    Pattern(offset, count, primaryColor, secondaryColor, tertiaryColor),
+StackPattern::StackPattern(Region *pRegion,
+                           const Color &primaryColor,
+                           const Color &secondaryColor,
+                           const Color &tertiaryColor,
+                           uint8_t flags) :
+    Pattern(pRegion, primaryColor, secondaryColor, tertiaryColor, flags),
     m_currentIndex(0), m_stackIndex(0)
 {
 }
@@ -263,23 +245,25 @@ StackPattern::reset()
 }
 
 bool
-StackPattern::tick(Sign *pSign)
+StackPattern::update()
 {
-    if (m_stackIndex >= m_pixelCount || !pSign) {
+    uint16_t pixelCount = getPixelCount();
+
+    if (m_stackIndex >= pixelCount || !m_pRegion) {
         return false;
     }
 
-    for (uint16_t p = 0; p < m_pixelCount; p++) {
-        if (p == m_currentIndex || p > (m_pixelCount - m_stackIndex)) {
-            setRelativePixelColor(pSign, p, m_secondaryColor);
+    for (uint16_t p = 0; p < pixelCount; p++) {
+        if (p == m_currentIndex || p > (pixelCount - m_stackIndex)) {
+            setRelativePixel(p, m_secondaryColor);
         }
         else {
-            setRelativePixelColor(pSign, p, m_primaryColor);
+            setRelativePixel(p, m_primaryColor);
         }
     }
-    pSign->showPixels();
+    m_pRegion->showPixels();
 
-    if (++m_currentIndex >= (m_pixelCount - m_stackIndex)) {
+    if (++m_currentIndex >= (pixelCount - m_stackIndex)) {
         m_stackIndex++;
         m_currentIndex = 0;
     }
@@ -287,11 +271,12 @@ StackPattern::tick(Sign *pSign)
     return true;
 }
 
-HalvesPattern::HalvesPattern(uint16_t offset, uint16_t count,
-                         const Color primaryColor,
-                         const Color secondaryColor,
-                         const Color tertiaryColor) :
-    Pattern(offset, count, primaryColor, secondaryColor, tertiaryColor),
+HalvesPattern::HalvesPattern(Region *pRegion,
+                             const Color &primaryColor,
+                             const Color &secondaryColor,
+                             const Color &tertiaryColor,
+                             uint8_t flags) :
+    Pattern(pRegion, primaryColor, secondaryColor, tertiaryColor, flags),
     m_splitIndex(0)
 {
 }
@@ -307,33 +292,34 @@ HalvesPattern::reset()
 }
 
 bool
-HalvesPattern::tick(Sign *pSign)
+HalvesPattern::update()
 {
-    if (m_splitIndex >= m_pixelCount) {
+    uint16_t pixelCount = getPixelCount();
+
+    if (m_splitIndex >= pixelCount || !m_pRegion) {
         return false;
     }
 
-    if (pSign) {
-        for (uint16_t p = 0; p < m_pixelCount; p++) {
-            if (((p + m_splitIndex) % m_pixelCount) < (m_pixelCount / 2)) {
-                setRelativePixelColor(pSign, p, m_secondaryColor);
-            }
-            else {
-                setRelativePixelColor(pSign, p, m_primaryColor);
-            }
+    for (uint16_t p = 0; p < pixelCount; p++) {
+        if (((p + m_splitIndex) % pixelCount) < (pixelCount / 2)) {
+            setRelativePixel(p, m_secondaryColor);
         }
-        pSign->showPixels();
+        else {
+            setRelativePixel(p, m_primaryColor);
+        }
     }
+    m_pRegion->showPixels();
 
     m_splitIndex++;
     return true;
 }
 
-RandomPattern::RandomPattern(uint16_t offset, uint16_t count,
-                         const Color primaryColor,
-                         const Color secondaryColor,
-                         const Color tertiaryColor) :
-    Pattern(offset, count, primaryColor, secondaryColor, tertiaryColor)
+RandomPattern::RandomPattern(Region *pRegion,
+                             const Color &primaryColor,
+                             const Color &secondaryColor,
+                             const Color &tertiaryColor,
+                             uint8_t flags) :
+    Pattern(pRegion, primaryColor, secondaryColor, tertiaryColor, flags)
 {
     reset();
 }
@@ -351,12 +337,13 @@ RandomPattern::reset()
 }
 
 bool
-RandomPattern::tick(Sign *pSign)
+RandomPattern::update()
 {
+    uint16_t pixelCount = getPixelCount();
     uint8_t hasUnsetBits = 0;
     uint16_t p = 0;
 
-    for (p = 0; p < m_pixelCount; p++) {
+    for (p = 0; p < pixelCount; p++) {
         if ((p / 8) >= m_bitsLength) {
             continue;
         }
@@ -366,12 +353,12 @@ RandomPattern::tick(Sign *pSign)
         hasUnsetBits = 1;
         break;
     }
-    if (!hasUnsetBits || !pSign) {
+    if (!hasUnsetBits || !m_pRegion) {
         return false;
     }
 
     while (1) {
-        p = random(m_pixelCount);
+        p = random(pixelCount);
         if ((p / 8) >= m_bitsLength) {
             continue;
         }
@@ -382,20 +369,19 @@ RandomPattern::tick(Sign *pSign)
         break;
     }
 
-    for (p = 0; p < m_pixelCount; p++) {
+    for (p = 0; p < pixelCount; p++) {
         if ((p / 8) >= m_bitsLength) {
             continue;
         }
         if (bitRead(m_bits[p / 8],  (p % 8))) {
-            setRelativePixelColor(pSign, p, m_secondaryColor);
+            setRelativePixel(p, m_secondaryColor);
         }
         else {
-            setRelativePixelColor(pSign, p, m_primaryColor);
+            setRelativePixel(p, m_primaryColor);
         }
     }
-    pSign->showPixels();
+    m_pRegion->showPixels();
 
     return true;
 }
-
 

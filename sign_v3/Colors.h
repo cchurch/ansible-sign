@@ -21,6 +21,7 @@
 #define COLORS_H
 
 #include <Arduino.h>
+#include "ConfigTypes.h"
  
 class Color {
 
@@ -29,6 +30,7 @@ class Color {
     Color(uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0,
           int8_t motion = 0, int8_t sound = 0);
     Color(const Color &color);
+    Color(const config_color_t &color_t);
     ~Color();
 
     void

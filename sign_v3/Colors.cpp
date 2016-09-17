@@ -27,8 +27,14 @@ Color::Color(uint8_t red, uint8_t green, uint8_t blue,
 }
 
 Color::Color(const Color &color) :
-    m_red(color.m_red), m_blue(color.m_blue), m_green(color.m_green),
+    m_red(color.m_red), m_green(color.m_green), m_blue(color.m_blue),
     m_motion(color.m_motion), m_sound(color.m_sound)
+{
+}
+
+Color::Color(const config_color_t &color_t) :
+    m_red(color_t.red), m_green(color_t.green), m_blue(color_t.blue),
+    m_motion(color_t.motion), m_sound(color_t.sound)
 {
 }
 
@@ -49,7 +55,7 @@ void
 Color::applyMotion(uint8_t motion)
 {
     if (m_motion > 0 && !motion) {
-        darken(2 * m_motion + 1);      
+        darken(2 * m_motion + 1);
     }
     else if (m_motion < 0 && motion) {
         darken(-2 * m_motion - 1);
@@ -67,9 +73,9 @@ Color::applySound(uint8_t sound)
     }
 }
 
-const Color BLACK = Color(0, 0, 0, 32, 32);
-const Color WHITE = Color(0xff, 0xff, 0xff, 32, 32);
-const Color RED = Color(0xff, 0, 0, 32, 32);
+const Color BLACK = Color(0, 0, 0);
+const Color WHITE = Color(0xff, 0xff, 0xff);
+const Color RED = Color(0xff, 0, 0);
 const Color GREEN = Color(0, 0xff, 0);
 const Color BLUE = Color(0, 0, 0xff);
 const Color MANGO = Color(0xff, 0x58, 0x50);  // Ansible Red (exact)

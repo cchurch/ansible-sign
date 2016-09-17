@@ -21,46 +21,50 @@
 #define PATTERNS_H
 
 #include <Arduino.h>
+#include "ConfigTypes.h"
 #include "Colors.h"
-#include "Sign.h"
+#include "Region.h"
 
 class Pattern {
 
   public:
 
-    Pattern(uint16_t offset = 0, uint16_t count = 0,
-            const Color primaryColor = BLACK,
-            const Color secondaryColor = BLACK,
-            const Color tertiaryColor = BLACK);
+    Pattern(Region *pRegion = 0,
+            const Color &primaryColor = BLACK,
+            const Color &secondaryColor = BLACK,
+            const Color &tertiaryColor = BLACK,
+            uint8_t flags = 0);
     virtual ~Pattern();
 
     virtual void reset();
-    virtual bool tick(Sign *pSign);
+    virtual bool update();
 
     void
-    setFlags(uint8_t flags),
-    setPixelOffset(uint16_t offset),
-    setPixelCount(uint16_t count),
-    setPixelShift(uint16_t shift),
+    setRegion(Region *pRegion),
     setPrimaryColor(const Color &color),
     setSecondaryColor(const Color &color),
-    setTertiaryColor(const Color &color);
+    setTertiaryColor(const Color &color),
+    setFlags(uint8_t flags);
+
+    Region *
+    getRegion();
+
+    uint8_t
+    getFlags();
 
     uint16_t
     getPixelCount();
 
   protected:
 
-    void setRelativePixelColor(Sign *pSign, uint16_t pixel, const Color &color);
-    void updateAll(Sign *pSign, const Color &color);
+    void
+    setRelativePixel(uint16_t pixel, const Color &color);
+
+    Region *
+    m_pRegion;
 
     uint8_t
     m_flags;
-
-    uint16_t
-    m_pixelOffset,
-    m_pixelCount,
-    m_pixelShift;
 
     Color
     m_primaryColor,
@@ -73,14 +77,15 @@ class SolidPattern : public Pattern {
 
   public:
 
-    SolidPattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color primaryColor = BLACK,
-                 const Color secondaryColor = BLACK,
-                 const Color tertiaryColor = BLACK);
+    SolidPattern(Region *pRegion = 0,
+                 const Color &primaryColor = BLACK,
+                 const Color &secondaryColor = BLACK,
+                 const Color &tertiaryColor = BLACK,
+                 uint8_t flags = 0);
     virtual ~SolidPattern();
 
     virtual void reset();
-    virtual bool tick(Sign *pSign);
+    virtual bool update();
 
   protected:
 
@@ -93,14 +98,15 @@ class FadePattern : public Pattern {
 
   public:
 
-    FadePattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color primaryColor = BLACK,
-                 const Color secondaryColor = BLACK,
-                 const Color tertiaryColor = BLACK);
+    FadePattern(Region *pRegion = 0,
+                const Color &primaryColor = BLACK,
+                const Color &secondaryColor = BLACK,
+                const Color &tertiaryColor = BLACK,
+                uint8_t flags = 0);
     virtual ~FadePattern();
 
     virtual void reset();
-    virtual bool tick(Sign *pSign);
+    virtual bool update();
 
   protected:
 
@@ -116,14 +122,15 @@ class SpinPattern : public Pattern {
 
   public:
 
-    SpinPattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color primaryColor = BLACK,
-                 const Color secondaryColor = BLACK,
-                 const Color tertiaryColor = BLACK);
+    SpinPattern(Region *pRegion = 0,
+                const Color &primaryColor = BLACK,
+                const Color &secondaryColor = BLACK,
+                const Color &tertiaryColor = BLACK,
+                uint8_t flags = 0);
     virtual ~SpinPattern();
 
     virtual void reset();
-    virtual bool tick(Sign *pSign);
+    virtual bool update();
 
   protected:
 
@@ -136,14 +143,15 @@ class StackPattern : public Pattern {
 
   public:
 
-    StackPattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color primaryColor = BLACK,
-                 const Color secondaryColor = BLACK,
-                 const Color tertiaryColor = BLACK);
+    StackPattern(Region *pRegion = 0,
+                 const Color &primaryColor = BLACK,
+                 const Color &secondaryColor = BLACK,
+                 const Color &tertiaryColor = BLACK,
+                 uint8_t flags = 0);
     virtual ~StackPattern();
 
     virtual void reset();
-    virtual bool tick(Sign *pSign);
+    virtual bool update();
 
   protected:
 
@@ -157,14 +165,15 @@ class HalvesPattern : public Pattern {
 
   public:
 
-    HalvesPattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color primaryColor = BLACK,
-                 const Color secondaryColor = BLACK,
-                 const Color tertiaryColor = BLACK);
+    HalvesPattern(Region *pRegion = 0,
+                  const Color &primaryColor = BLACK,
+                  const Color &secondaryColor = BLACK,
+                  const Color &tertiaryColor = BLACK,
+                  uint8_t flags = 0);
     virtual ~HalvesPattern();
 
     virtual void reset();
-    virtual bool tick(Sign *pSign);
+    virtual bool update();
 
   protected:
 
@@ -177,14 +186,15 @@ class RandomPattern : public Pattern {
 
   public:
 
-    RandomPattern(uint16_t offset = 0, uint16_t count = 0,
-                 const Color primaryColor = BLACK,
-                 const Color secondaryColor = BLACK,
-                 const Color tertiaryColor = BLACK);
+    RandomPattern(Region *pRegion = 0,
+                  const Color &primaryColor = BLACK,
+                  const Color &secondaryColor = BLACK,
+                  const Color &tertiaryColor = BLACK,
+                  uint8_t flags = 0);
     virtual ~RandomPattern();
 
     virtual void reset();
-    virtual bool tick(Sign *pSign);
+    virtual bool update();
 
   protected:
 

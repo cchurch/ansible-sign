@@ -19,12 +19,29 @@
 
 #include "Sign.h"
 
-Sign::Sign() :
+Sign::Sign(int pixelCount, int pixelPin, int motionPin, int soundInput) :
     m_motionPin(-1), m_soundInput(-1), m_lastSound(0),
     m_pixels(Adafruit_NeoPixel(0, -1, NEO_GRB + NEO_KHZ800))
 {
+    setPixelCount(pixelCount);
+    setPixelPin(pixelPin);
+    setMotionPin(motionPin);
+    setSoundInput(soundInput);
     m_pixels.setBrightness(127);
 }
+
+Sign::Sign(config_pins_t &pins_t, config_options_t &options_t) :
+    m_motionPin(-1), m_soundInput(-1), m_lastSound(0),
+    m_pixels(Adafruit_NeoPixel(0, -1, NEO_GRB + NEO_KHZ800))
+{
+    if (pins_t.motionInput != 0xff) {
+        setMotionPin(pins_t.motionInput);
+    }
+    if (pins_t.soundInput != 0xff) {
+        setSoundInput(pins_t.soundInput);
+    }
+}
+
 
 Sign::~Sign()
 {  
