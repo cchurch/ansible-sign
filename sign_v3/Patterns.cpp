@@ -385,3 +385,65 @@ RandomPattern::update()
     return true;
 }
 
+FirePattern::FirePattern(Region *pRegion,
+                         const Color &primaryColor,
+                         const Color &secondaryColor,
+                         const Color &tertiaryColor,
+                         uint8_t flags) :
+    Pattern(pRegion, primaryColor, secondaryColor, tertiaryColor, flags)
+{
+    reset();
+}
+
+FirePattern::~FirePattern()
+{
+}
+
+void
+FirePattern::reset()
+{
+    m_index = 0;
+}
+
+bool
+FirePattern::update()
+{
+   uint16_t pixelCount = getPixelCount();
+
+    if (m_index >= pixelCount || !m_pRegion) {
+        return false;
+    }
+
+    for (uint16_t p = 0; p < pixelCount; p++) {
+        if (m_flags & 0x04 && random(4)) {
+            continue;
+        }
+        switch (random(4)) {
+            case 0:
+                setRelativePixel(p, m_primaryColor);
+                break;
+            case 1:
+                setRelativePixel(p, m_secondaryColor);
+                break;
+            case 2:
+                setRelativePixel(p, m_tertiaryColor);
+                break;
+            default:
+                if (m_flags & 0x02) {
+                    setRelativePixel(p, m_tertiaryColor);
+                }
+                else if (m_flags & 0x01) {
+                    setRelativePixel(p, m_secondaryColor);
+                }
+                else {
+                    setRelativePixel(p, m_primaryColor);
+                }
+                break;
+        }
+    }
+    m_pRegion->showPixels();
+
+    m_index++;
+    return true;
+}
+

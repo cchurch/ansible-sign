@@ -204,5 +204,26 @@ class RandomPattern : public Pattern {
 
 };
 
+class FirePattern : public Pattern {
+
+  public:
+
+    FirePattern(Region *pRegion = 0,
+                 const Color &primaryColor = BLACK,
+                 const Color &secondaryColor = BLACK,
+                 const Color &tertiaryColor = BLACK,
+                 uint8_t flags = 0);
+    virtual ~FirePattern();
+
+    virtual void reset();
+    virtual bool update();
+
+  protected:
+
+    uint8_t
+    m_index;
+
+};
+
 #endif  // PATTERNS_H
 
